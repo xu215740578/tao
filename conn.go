@@ -7,14 +7,16 @@ import (
 	"sync"
 	"time"
 
-	"github.com/leesper/holmes"
+	"github.com/xu215740578/holmes"
 )
 
 const (
 	// MessageTypeBytes is the length of type header.
-	MessageTypeBytes = 4
+	MessageTypeBytes = 2
 	// MessageLenBytes is the length of length header.
 	MessageLenBytes = 4
+	// MessageHeaderBytes is the length of message header.
+	MessageHeaderBytes = 18
 	// MessageMaxBytes is the maximum bytes allowed for application data.
 	MessageMaxBytes = 1 << 23 // 8M
 )

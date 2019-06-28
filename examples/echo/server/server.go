@@ -1,15 +1,17 @@
 package main
 
 import (
+	"fmt"
 	"net"
 	"os"
 	"os/signal"
 	"runtime"
 	"syscall"
+	"time"
 
-	"github.com/leesper/holmes"
-	"github.com/leesper/tao"
-	"github.com/leesper/tao/examples/echo"
+	"github.com/xu215740578/holmes"
+	"github.com/xu215740578/tao"
+	"github.com/xu215740578/tao/examples/echo"
 )
 
 // EchoServer represents the echo server.
@@ -21,19 +23,39 @@ type EchoServer struct {
 func NewEchoServer() *EchoServer {
 	onConnect := tao.OnConnectOption(func(conn tao.WriteCloser) bool {
 		holmes.Infoln("on connect")
+		fmt.Println("on connect")
+		s, ok := conn.(*tao.ServerConn)
+		if !ok {
+			fmt.Println("on connect !ok")
+		} else {
+			s.RunEvery(1*time.Second, func(t time.Time, w tao.WriteCloser) {
+				s1 := w.(*tao.ServerConn)
+				if time.Now().Unix()-s1.HeartBeat()/1000000000 > 15 {
+					s1.Close()
+				}
+				fmt.Println(time.Now().Unix(), s1.HeartBeat())
+			})
+			fmt.Println("on connect ok", s.NetID())
+		}
 		return true
 	})
 
 	onClose := tao.OnCloseOption(func(conn tao.WriteCloser) {
 		holmes.Infoln("closing client")
+		s, _ := conn.(*tao.ServerConn)
+		fmt.Println("closing client", s.NetID())
 	})
 
 	onError := tao.OnErrorOption(func(conn tao.WriteCloser) {
 		holmes.Infoln("on error")
+		s, _ := conn.(*tao.ServerConn)
+		fmt.Println("on error", s.NetID())
 	})
 
 	onMessage := tao.OnMessageOption(func(msg tao.Message, conn tao.WriteCloser) {
 		holmes.Infoln("receving message")
+		s, _ := conn.(*tao.ServerConn)
+		fmt.Println("receving message", s.NetID())
 	})
 
 	return &EchoServer{
@@ -46,7 +68,7 @@ func main() {
 
 	runtime.GOMAXPROCS(runtime.NumCPU())
 
-	tao.Register(echo.Message{}.MessageNumber(), echo.DeserializeMessage, echo.ProcessMessage)
+	tao.Register(echo.UsMessage{}.MessageNumber(), echo.UsMessage{}.DeserializeMessage, echo.UsMessage{}.ProcessMessage, echo.UsMessage{}.MessageTypeHandler, echo.UsMessage{}.MessageHeadHandler)
 
 	l, err := net.Listen("tcp", ":12345")
 	if err != nil {

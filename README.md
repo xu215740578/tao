@@ -3,10 +3,10 @@
 Light-weight TCP Asynchronous gOlang framework
 轻量级TCP异步框架，Go语言实现 1.6.0
 
-[![GitHub stars](https://img.shields.io/github/stars/leesper/tao.svg)](https://github.com/leesper/tao/stargazers) 
-[![GitHub forks](https://img.shields.io/github/forks/leesper/tao.svg)](https://github.com/leesper/tao/network)
-[![GitHub license](https://img.shields.io/badge/license-Apache%202-blue.svg)](https://raw.githubusercontent.com/leesper/tao/master/LICENSE)
-[![GoDoc](https://godoc.org/github.com/leesper/tao?status.svg)](http://godoc.org/github.com/leesper/tao)
+[![GitHub stars](https://img.shields.io/github/stars/xu215740578/tao.svg)](https://github.com/xu215740578/tao/stargazers) 
+[![GitHub forks](https://img.shields.io/github/forks/xu215740578/tao.svg)](https://github.com/xu215740578/tao/network)
+[![GitHub license](https://img.shields.io/badge/license-Apache%202-blue.svg)](https://raw.githubusercontent.com/xu215740578/tao/master/LICENSE)
+[![GoDoc](https://godoc.org/github.com/xu215740578/tao?status.svg)](http://godoc.org/github.com/xu215740578/tao)
 
 ## Requirements
 
@@ -14,7 +14,7 @@ Light-weight TCP Asynchronous gOlang framework
 
 ## Installation
 
-`go get -u -v github.com/leesper/tao`
+`go get -u -v github.com/xu215740578/tao`
 
 ## Usage
 
@@ -27,9 +27,9 @@ import (
 	"fmt"
 	"net"
 
-	"github.com/leesper/holmes"
-	"github.com/leesper/tao"
-	"github.com/leesper/tao/examples/chat"
+	"github.com/xu215740578/holmes"
+	"github.com/xu215740578/tao"
+	"github.com/xu215740578/tao/examples/chat"
 )
 
 // ChatServer is the chatting server.
