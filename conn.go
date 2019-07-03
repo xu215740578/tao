@@ -562,6 +562,7 @@ func readLoop(c WriteCloser, wg *sync.WaitGroup) {
 		handlerCh        chan MessageHandler
 		msg              Message
 		err              error
+		netid            int64
 	)
 
 	switch c := c.(type) {
@@ -573,6 +574,7 @@ func readLoop(c WriteCloser, wg *sync.WaitGroup) {
 		setHeartBeatFunc = c.SetHeartBeat
 		onMessage = c.belong.opts.onMessage
 		handlerCh = c.handlerCh
+		netid = c.NetID()
 	case *ClientConn:
 		rawConn = c.rawConn
 		codec = c.opts.codec
@@ -581,6 +583,7 @@ func readLoop(c WriteCloser, wg *sync.WaitGroup) {
 		setHeartBeatFunc = c.SetHeartBeat
 		onMessage = c.opts.onMessage
 		handlerCh = c.handlerCh
+		netid = c.NetID()
 	}
 
 	defer func() {
@@ -595,15 +598,15 @@ func readLoop(c WriteCloser, wg *sync.WaitGroup) {
 	for {
 		select {
 		case <-cDone: // connection closed
-			holmes.Debugln("receiving cancel signal from conn")
+			holmes.Debugf("[...%d] receiving cancel signal from conn", netid)
 			return
 		case <-sDone: // server closed
-			holmes.Debugln("receiving cancel signal from server")
+			holmes.Debugf("[...%d] receiving cancel signal from server", netid)
 			return
 		default:
 			msg, err = codec.Decode(rawConn)
 			if err != nil {
-				holmes.Errorf("error decoding message %v\n", err)
+				holmes.Errorf("[...%d] error decoding message %v\n", netid, err)
 				if _, ok := err.(ErrUndefined); ok {
 					// update heart beats
 					setHeartBeatFunc(time.Now().UnixNano())
@@ -615,10 +618,10 @@ func readLoop(c WriteCloser, wg *sync.WaitGroup) {
 			handler := GetHandlerFunc(msg.MessageNumber())
 			if handler == nil {
 				if onMessage != nil {
-					holmes.Infof("message %d call onMessage()\n", msg.MessageNumber())
+					holmes.Infof("[...%d] message %d call onMessage()\n", netid, msg.MessageNumber())
 					onMessage(msg, c.(WriteCloser))
 				} else {
-					holmes.Warnf("no handler or onMessage() found for message %d\n", msg.MessageNumber())
+					holmes.Warnf("[...%d] no handler or onMessage() found for message %d\n", netid, msg.MessageNumber())
 				}
 				continue
 			}

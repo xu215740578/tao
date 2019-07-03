@@ -14,7 +14,7 @@ import (
 func main() {
 	tao.Register(echo.UsMessage{}.MessageNumber(), echo.UsMessage{}.DeserializeMessage, echo.UsMessage{}.ProcessMessage, echo.UsMessage{}.MessageTypeHandler, echo.UsMessage{}.MessageHeadHandler)
 
-	c, err := net.Dial("tcp", "127.0.0.1:12345")
+	c, err := net.Dial("tcp", "127.0.0.1:50099")
 	if err != nil {
 		holmes.Fatalln(err)
 		fmt.Println(err)
@@ -53,7 +53,7 @@ func main() {
 		Type: 0x5553,
 		Version: 2,
 		Encrypt: 0,
-		Command: 0x1234,
+		Command: 12289,
 		BodySize:uint16(len("hello, world")),
 	}
 	echo := echo.UsMessage{
