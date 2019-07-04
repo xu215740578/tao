@@ -8,7 +8,7 @@ import (
 	"io"
 	"net"
 
-	"github.com/xu215740578/holmes"
+	"github.com/xu215740578/logger"
 )
 
 const (
@@ -141,7 +141,7 @@ func (codec TypeLengthValueCodec) Decode(raw net.Conn) (Message, error) {
 			ec <- err
 			close(bc)
 			close(ec)
-			holmes.Debugln("go-routine read message type exited", err)
+			logger.Debugln("go-routine read message type exited", err)
 			return
 		}
 		bc <- typeData
@@ -189,7 +189,7 @@ func (codec TypeLengthValueCodec) Decode(raw net.Conn) (Message, error) {
 		}
 
 		if msgLen > MessageMaxBytes {
-			holmes.Errorf("message(type %d) has bytes(%d) beyond max %d\n", msgType, msgLen, MessageMaxBytes)
+			logger.Errorf("message(type %d) has bytes(%d) beyond max %d\n", msgType, msgLen, MessageMaxBytes)
 			return nil, ErrBadData
 		}
 

@@ -27,7 +27,7 @@ import (
 	"fmt"
 	"net"
 
-	"github.com/xu215740578/holmes"
+	"github.com/xu215740578/logger"
 	"github.com/xu215740578/tao"
 	"github.com/xu215740578/tao/examples/chat"
 )
@@ -40,14 +40,14 @@ type ChatServer struct {
 // NewChatServer returns a ChatServer.
 func NewChatServer() *ChatServer {
 	onConnectOption := tao.OnConnectOption(func(conn tao.WriteCloser) bool {
-		holmes.Infoln("on connect")
+		logger.Infoln("on connect")
 		return true
 	})
 	onErrorOption := tao.OnErrorOption(func(conn tao.WriteCloser) {
-		holmes.Infoln("on error")
+		logger.Infoln("on error")
 	})
 	onCloseOption := tao.OnCloseOption(func(conn tao.WriteCloser) {
-		holmes.Infoln("close chat client")
+		logger.Infoln("close chat client")
 	})
 	return &ChatServer{
 		tao.NewServer(onConnectOption, onErrorOption, onCloseOption),
@@ -55,18 +55,18 @@ func NewChatServer() *ChatServer {
 }
 
 func main() {
-	defer holmes.Start().Stop()
+	defer logger.Start().Stop()
 
 	tao.Register(chat.ChatMessage, chat.DeserializeMessage, chat.ProcessMessage)
 
 	l, err := net.Listen("tcp", fmt.Sprintf("%s:%d", "0.0.0.0", 12345))
 	if err != nil {
-		holmes.Fatalln("listen error", err)
+		logger.Fatalln("listen error", err)
 	}
 	chatServer := NewChatServer()
 	err = chatServer.Start(l)
 	if err != nil {
-		holmes.Fatalln("start error", err)
+		logger.Fatalln("start error", err)
 	}
 }
 ```

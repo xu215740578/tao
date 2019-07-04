@@ -6,7 +6,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/xu215740578/holmes"
+	"github.com/xu215740578/logger"
 )
 
 const (
@@ -157,7 +157,7 @@ func (tw *TimingWheel) getExpired() []*timerType {
 		timer := heap.Pop(&tw.timers).(*timerType)
 		elapsed := time.Since(timer.expiration).Seconds()
 		if elapsed > 1.0 {
-			holmes.Warnf("elapsed %f\n", elapsed)
+			logger.Warnf("elapsed %f\n", elapsed)
 		}
 		if elapsed > 0.0 {
 			expired = append(expired, timer)

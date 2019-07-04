@@ -6,7 +6,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/xu215740578/holmes"
+	"github.com/xu215740578/logger"
 	"github.com/xu215740578/tao"
 	"github.com/xu215740578/tao/examples/echo"
 )
@@ -16,12 +16,12 @@ func main() {
 
 	c, err := net.Dial("tcp", "127.0.0.1:50099")
 	if err != nil {
-		holmes.Fatalln(err)
+		logger.Fatalln(err)
 		fmt.Println(err)
 	}
 
 	onConnect := tao.OnConnectOption(func(conn tao.WriteCloser) bool {
-		holmes.Infoln("on connect")
+		logger.Infoln("on connect")
 		_, ok := conn.(*tao.ClientConn)
 		if !ok {
 			fmt.Println("on connect !ok")
@@ -32,12 +32,12 @@ func main() {
 	})
 
 	onError := tao.OnErrorOption(func(conn tao.WriteCloser) {
-		holmes.Infoln("on error")
+		logger.Infoln("on error")
 		fmt.Println("on error")
 	})
 
 	onClose := tao.OnCloseOption(func(conn tao.WriteCloser) {
-		holmes.Infoln("on close")
+		logger.Infoln("on close")
 		fmt.Println("on close")
 		os.Exit(1)
 	})
@@ -67,10 +67,10 @@ func main() {
 		time.Sleep(60 * time.Millisecond)
 		err := conn.Write(echo)
 		if err != nil {
-			holmes.Errorln(err)
+			logger.Errorln(err)
 		}
 	}
-	holmes.Debugln("hello")
+	logger.Debugln("hello")
 
 	conn.RunEvery(5*time.Second, func(t time.Time, w tao.WriteCloser){
 		conn.Write(echo)

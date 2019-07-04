@@ -7,7 +7,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/xu215740578/holmes"
+	"github.com/xu215740578/logger"
 )
 
 const (
@@ -131,7 +131,7 @@ func (sc *ServerConn) ContextValue(k interface{}) interface{} {
 // Start starts the server connection, creating go-routines for reading,
 // writing and handlng.
 func (sc *ServerConn) Start() {
-	holmes.Infof("conn start, <%v -> %v>\n", sc.rawConn.LocalAddr(), sc.rawConn.RemoteAddr())
+	logger.Infof("conn start, <%v -> %v>\n", sc.rawConn.LocalAddr(), sc.rawConn.RemoteAddr())
 	onConnect := sc.belong.opts.onConnect
 	if onConnect != nil {
 		onConnect(sc)
@@ -149,7 +149,7 @@ func (sc *ServerConn) Start() {
 // go-routines are completed and returned.
 func (sc *ServerConn) Close() {
 	sc.once.Do(func() {
-		holmes.Infof("conn close gracefully, <%v -> %v>\n", sc.rawConn.LocalAddr(), sc.rawConn.RemoteAddr())
+		logger.Infof("conn close gracefully, <%v -> %v>\n", sc.rawConn.LocalAddr(), sc.rawConn.RemoteAddr())
 
 		// callback on close
 		onClose := sc.belong.opts.onClose
@@ -362,7 +362,7 @@ func (cc *ClientConn) ContextValue(k interface{}) interface{} {
 // Start starts the client connection, creating go-routines for reading,
 // writing and handlng.
 func (cc *ClientConn) Start() {
-	holmes.Infof("conn start, <%v -> %v>\n", cc.rawConn.LocalAddr(), cc.rawConn.RemoteAddr())
+	logger.Infof("conn start, <%v -> %v>\n", cc.rawConn.LocalAddr(), cc.rawConn.RemoteAddr())
 	onConnect := cc.opts.onConnect
 	if onConnect != nil {
 		onConnect(cc)
@@ -380,7 +380,7 @@ func (cc *ClientConn) Start() {
 // go-routines are completed and returned.
 func (cc *ClientConn) Close() {
 	cc.once.Do(func() {
-		holmes.Infof("conn close gracefully, <%v -> %v>\n", cc.rawConn.LocalAddr(), cc.rawConn.RemoteAddr())
+		logger.Infof("conn close gracefully, <%v -> %v>\n", cc.rawConn.LocalAddr(), cc.rawConn.RemoteAddr())
 
 		// callback on close
 		onClose := cc.opts.onClose
@@ -428,12 +428,12 @@ func (cc *ClientConn) reconnect() {
 	if cc.opts.tlsCfg != nil {
 		c, err = tls.Dial("tcp", cc.addr, cc.opts.tlsCfg)
 		if err != nil {
-			holmes.Fatalln("tls dial error", err)
+			logger.Fatalln("tls dial error", err)
 		}
 	} else {
 		c, err = net.Dial("tcp", cc.addr)
 		if err != nil {
-			holmes.Fatalln("net dial error", err)
+			logger.Fatalln("net dial error", err)
 		}
 	}
 	// copy the newly-created *ClientConn to cc, so after
@@ -536,7 +536,7 @@ func asyncWrite(c interface{}, m Message) (err error) {
 	}
 
 	if err != nil {
-		holmes.Errorf("asyncWrite error %v\n", err)
+		logger.Errorf("asyncWrite error %v\n", err)
 		return
 	}
 
@@ -588,25 +588,25 @@ func readLoop(c WriteCloser, wg *sync.WaitGroup) {
 
 	defer func() {
 		if p := recover(); p != nil {
-			holmes.Errorf("panics: %v\n", p)
+			logger.Errorf("panics: %v\n", p)
 		}
 		wg.Done()
-		holmes.Debugln("readLoop go-routine exited")
+		logger.Debugln("readLoop go-routine exited")
 		c.Close()
 	}()
 
 	for {
 		select {
 		case <-cDone: // connection closed
-			holmes.Debugf("[...%d] receiving cancel signal from conn", netid)
+			logger.Debugf("[...%d] receiving cancel signal from conn", netid)
 			return
 		case <-sDone: // server closed
-			holmes.Debugf("[...%d] receiving cancel signal from server", netid)
+			logger.Debugf("[...%d] receiving cancel signal from server", netid)
 			return
 		default:
 			msg, err = codec.Decode(rawConn)
 			if err != nil {
-				holmes.Errorf("[...%d] error decoding message %v\n", netid, err)
+				logger.Errorf("[...%d] error decoding message %v\n", netid, err)
 				if _, ok := err.(ErrUndefined); ok {
 					// update heart beats
 					setHeartBeatFunc(time.Now().UnixNano())
@@ -618,10 +618,10 @@ func readLoop(c WriteCloser, wg *sync.WaitGroup) {
 			handler := GetHandlerFunc(msg.MessageNumber())
 			if handler == nil {
 				if onMessage != nil {
-					holmes.Infof("[...%d] message %d call onMessage()\n", netid, msg.MessageNumber())
+					logger.Infof("[...%d] message %d call onMessage()\n", netid, msg.MessageNumber())
 					onMessage(msg, c.(WriteCloser))
 				} else {
-					holmes.Warnf("[...%d] no handler or onMessage() found for message %d\n", netid, msg.MessageNumber())
+					logger.Warnf("[...%d] no handler or onMessage() found for message %d\n", netid, msg.MessageNumber())
 				}
 				continue
 			}
@@ -657,7 +657,7 @@ func writeLoop(c WriteCloser, wg *sync.WaitGroup) {
 
 	defer func() {
 		if p := recover(); p != nil {
-			holmes.Errorf("panics: %v\n", p)
+			logger.Errorf("panics: %v\n", p)
 		}
 		// drain all pending messages before exit
 	OuterFor:
@@ -666,7 +666,7 @@ func writeLoop(c WriteCloser, wg *sync.WaitGroup) {
 			case pkt = <-sendCh:
 				if pkt != nil {
 					if _, err = rawConn.Write(pkt); err != nil {
-						holmes.Errorf("error writing data %v\n", err)
+						logger.Errorf("error writing data %v\n", err)
 					}
 				}
 			default:
@@ -674,22 +674,22 @@ func writeLoop(c WriteCloser, wg *sync.WaitGroup) {
 			}
 		}
 		wg.Done()
-		holmes.Debugln("writeLoop go-routine exited")
+		logger.Debugln("writeLoop go-routine exited")
 		c.Close()
 	}()
 
 	for {
 		select {
 		case <-cDone: // connection closed
-			holmes.Debugln("receiving cancel signal from conn")
+			logger.Debugln("receiving cancel signal from conn")
 			return
 		case <-sDone: // server closed
-			holmes.Debugln("receiving cancel signal from server")
+			logger.Debugln("receiving cancel signal from server")
 			return
 		case pkt = <-sendCh:
 			if pkt != nil {
 				if _, err = rawConn.Write(pkt); err != nil {
-					holmes.Errorf("error writing data %v\n", err)
+					logger.Errorf("error writing data %v\n", err)
 					return
 				}
 			}
@@ -730,20 +730,20 @@ func handleLoop(c WriteCloser, wg *sync.WaitGroup) {
 
 	defer func() {
 		if p := recover(); p != nil {
-			holmes.Errorf("panics: %v\n", p)
+			logger.Errorf("panics: %v\n", p)
 		}
 		wg.Done()
-		holmes.Debugln("handleLoop go-routine exited")
+		logger.Debugln("handleLoop go-routine exited")
 		c.Close()
 	}()
 
 	for {
 		select {
 		case <-cDone: // connectin closed
-			holmes.Debugln("receiving cancel signal from conn")
+			logger.Debugln("receiving cancel signal from conn")
 			return
 		case <-sDone: // server closed
-			holmes.Debugln("receiving cancel signal from server")
+			logger.Debugln("receiving cancel signal from server")
 			return
 		case msgHandler := <-handlerCh:
 			msg, handler := msgHandler.message, msgHandler.handler
@@ -753,7 +753,7 @@ func handleLoop(c WriteCloser, wg *sync.WaitGroup) {
 						handler(NewContextWithNetID(NewContextWithMessage(ctx, msg), netID), c)
 					})
 					if err != nil {
-						holmes.Errorln(err)
+						logger.Errorln(err)
 					}
 					addTotalHandle()
 				} else {
@@ -764,14 +764,14 @@ func handleLoop(c WriteCloser, wg *sync.WaitGroup) {
 			if timeout != nil {
 				timeoutNetID := NetIDFromContext(timeout.Ctx)
 				if timeoutNetID != netID {
-					holmes.Errorf("timeout net %d, conn net %d, mismatched!\n", timeoutNetID, netID)
+					logger.Errorf("timeout net %d, conn net %d, mismatched!\n", timeoutNetID, netID)
 				}
 				if askForWorker {
 					err = WorkerPoolInstance().Put(netID, func() {
 						timeout.Callback(time.Now(), c.(WriteCloser))
 					})
 					if err != nil {
-						holmes.Errorln(err)
+						logger.Errorln(err)
 					}
 				} else {
 					timeout.Callback(time.Now(), c.(WriteCloser))

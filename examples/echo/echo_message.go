@@ -9,7 +9,7 @@ import (
 	"reflect"
 	"unsafe"
 
-	"github.com/xu215740578/holmes"
+	"github.com/xu215740578/logger"
 	"github.com/xu215740578/tao"
 )
 
@@ -116,7 +116,7 @@ func (em UsMessage) DeserializeMessage(data []byte) (message tao.Message, err er
 func (em UsMessage) ProcessMessage(ctx context.Context, conn tao.WriteCloser) {
 	fmt.Println("ProcessMessage")
 	msg := tao.MessageFromContext(ctx).(UsMessage)
-	holmes.Infof("receving message %s, Type is %04x, BodySize %d, Command %04x\n", string(msg.Content[:]), msg.Header.Type, msg.Header.BodySize, msg.Header.Command)
+	logger.Infof("receving message %s, Type is %04x, BodySize %d, Command %04x\n", string(msg.Content[:]), msg.Header.Type, msg.Header.BodySize, msg.Header.Command)
 
 	switch conn.(type) {
 	case *tao.ServerConn:

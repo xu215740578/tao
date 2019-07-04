@@ -9,7 +9,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/xu215740578/holmes"
+	"github.com/xu215740578/logger"
 	"github.com/xu215740578/tao"
 	"github.com/xu215740578/tao/examples/echo"
 )
@@ -22,7 +22,7 @@ type EchoServer struct {
 // NewEchoServer returns an EchoServer.
 func NewEchoServer() *EchoServer {
 	onConnect := tao.OnConnectOption(func(conn tao.WriteCloser) bool {
-		holmes.Infoln("on connect")
+		logger.Infoln("on connect")
 		fmt.Println("on connect")
 		s, ok := conn.(*tao.ServerConn)
 		if !ok {
@@ -41,19 +41,19 @@ func NewEchoServer() *EchoServer {
 	})
 
 	onClose := tao.OnCloseOption(func(conn tao.WriteCloser) {
-		holmes.Infoln("closing client")
+		logger.Infoln("closing client")
 		s, _ := conn.(*tao.ServerConn)
 		fmt.Println("closing client", s.NetID())
 	})
 
 	onError := tao.OnErrorOption(func(conn tao.WriteCloser) {
-		holmes.Infoln("on error")
+		logger.Infoln("on error")
 		s, _ := conn.(*tao.ServerConn)
 		fmt.Println("on error", s.NetID())
 	})
 
 	onMessage := tao.OnMessageOption(func(msg tao.Message, conn tao.WriteCloser) {
-		holmes.Infoln("receving message")
+		logger.Infoln("receving message")
 		s, _ := conn.(*tao.ServerConn)
 		fmt.Println("receving message", s.NetID())
 	})
@@ -64,7 +64,8 @@ func NewEchoServer() *EchoServer {
 }
 
 func main() {
-	defer holmes.Start().Stop()
+	lg := logger.InitLogger("./server.log", "debug", 50, 3)
+	defer lg.Sync()
 
 	runtime.GOMAXPROCS(runtime.NumCPU())
 
@@ -72,7 +73,7 @@ func main() {
 
 	l, err := net.Listen("tcp", ":12345")
 	if err != nil {
-		holmes.Fatalf("listen error %v", err)
+		logger.Fatalf("listen error %v", err)
 	}
 	echoServer := NewEchoServer()
 
