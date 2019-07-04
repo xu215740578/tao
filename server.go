@@ -318,7 +318,7 @@ func (s *Server) Stop() {
 		return true
 	})
 	// let GC do the cleanings
-	s.conns = nil
+	//s.conns = nil
 
 	for _, c := range conns {
 		c.rawConn.Close()
@@ -330,6 +330,9 @@ func (s *Server) Stop() {
 	s.mu.Unlock()
 
 	s.wg.Wait()
+
+	// let GC do the cleanings
+	s.conns = nil
 
 	logger.Infoln("server stopped gracefully, bye.")
 	os.Exit(0)
