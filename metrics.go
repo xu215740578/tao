@@ -3,6 +3,7 @@ package tao
 import (
 	"expvar"
 	"fmt"
+	"io"
 	"net/http"
 	"strconv"
 
@@ -23,9 +24,14 @@ func init() {
 	qpsExported = expvar.NewFloat("QPS")
 }
 
+func monitorHander(w http.ResponseWriter, r *http.Request) {
+	io.WriteString(w, fmt.Sprintf("handleExported %d, connExported %d, timeExported %f, qpsExported %f", handleExported.Value(), connExported.Value(), timeExported.Value(), qpsExported.Value()))
+}
+
 // MonitorOn starts up an HTTP monitor on port.
 func MonitorOn(port int) {
 	go func() {
+		http.HandleFunc("/monitor", monitorHander)
 		if err := http.ListenAndServe(fmt.Sprintf(":%d", port), nil); err != nil {
 			logger.Errorln(err)
 			return
