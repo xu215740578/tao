@@ -64,8 +64,8 @@ func NewEchoServer() *EchoServer {
 }
 
 func main() {
-	lg := logger.InitLogger("./server.log", "debug", 50, 3)
-	defer lg.Sync()
+	logger.InitLogger("./server.log", "debug", 50, 3)
+	defer logger.Sync()
 
 	runtime.GOMAXPROCS(runtime.NumCPU())
 
